@@ -1,8 +1,16 @@
 # rag
 retrieval augment generation (rag) streamlit (st) based web app with chatbot support from Gemini
 
-## codespace
-https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882db15-890d-4101-b37d-3f4de152a243&continueOn=1
+# setup and run
+## install requirements
+```bash
+pip install -r requirements.txt
+```
+
+## run via streamlit
+```bash
+streamlit run rag.py
+```
 
 # about
 - upload youtube_videos data of format (mentioned at the end).
@@ -13,6 +21,9 @@ https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882d
 - uses `faiss` for creating vector store for querying
 - uses `gemini` for good quality and scoped Q&A
 - uses `streamlit` for the web interface
+
+## codespace
+https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882db15-890d-4101-b37d-3f4de152a243&continueOn=1
 
 # sample queries
 ![IMG-20250511-WA0063](https://github.com/user-attachments/assets/179f43e4-ae3e-4ad1-ba7a-d5a724f2cf65)
