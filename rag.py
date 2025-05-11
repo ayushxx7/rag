@@ -1,9 +1,8 @@
 import streamlit as st
 import os
-import zipfile
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+import json
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 import google.generativeai as genai
 
 
@@ -11,28 +10,22 @@ import google.generativeai as genai
 genai.configure(api_key="AIzaSyCWWp87jq69qbFdC2hIvd1B7QgZf0QuS5U")
 model = genai.GenerativeModel("gemini-1.5-pro")
 
-# Extract text from SQL file 
-def extract_text_from_sql(sql_path):
-    with open(sql_path, 'r', encoding='utf-8', errors='ignore') as f:
-        return f.read()
+# Load JSON data from a file
+def load_json_data(json_path):
+    with open(json_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
-# Extract SQL files from zip and return their combined content
-def extract_sql_from_zip(zip_path, extract_to="unzipped_sqls"):
-    os.makedirs(extract_to, exist_ok=True)
+# Extract text from JSON data
+def extract_text_from_json(json_data):
     text = ""
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
-        for root, _, files in os.walk(extract_to):
-            for file in files:
-                if file.endswith(".sql"):
-                    file_path = os.path.join(root, file)
-                    text += extract_text_from_sql(file_path) + "\n"
+    for video in json_data.get("videos", []):
+        title = video.get("title", "")
+        description = video.get("description", "")
+        text += f"Title: {title}\nDescription: {description}\n\n"
     return text
 
 # Create FAISS vector store
 def create_faiss_vector_store(text, path="faiss_index"):
-    # splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    # chunks = splitter.split_text(text)
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vector_store = FAISS.from_texts([text], embedding=embeddings)
     vector_store.save_local(path)
@@ -43,10 +36,10 @@ def load_faiss_vector_store(path="faiss_index"):
     return FAISS.load_local(path, embeddings, allow_dangerous_deserialization=True)
 
 # Streamlit App
-st.title("RAG Chatbot with SQL Files")
-st.write("Upload a .SQL file or a .ZIP containing SQL files. Ask questions based on the contents.")
+st.title("RAG Chatbot with YouTube Videos")
+st.write("Upload a `youtube_videos.json` file. Ask questions based on the contents.")
 
-uploaded_file = st.file_uploader("Upload your .SQL or .ZIP file", type=["sql", "zip"])
+uploaded_file = st.file_uploader("Upload your JSON file", type=["json"])
 
 if uploaded_file is not None:
     os.makedirs("uploaded", exist_ok=True)
@@ -55,18 +48,17 @@ if uploaded_file is not None:
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    # Determine file type and extract text
-    if uploaded_file.name.endswith(".sql"):
-        text = extract_text_from_sql(file_path)
-    elif uploaded_file.name.endswith(".zip"):
-        st.info("Extracting SQL files from ZIP...")
-        text = extract_sql_from_zip(file_path)
-    else:
-        st.error("Unsupported file type.")
+    # Load and process JSON data
+    try:
+        st.info("Loading JSON data...")
+        json_data = load_json_data(file_path)
+        text = extract_text_from_json(json_data)
+    except Exception as e:
+        st.error(f"Error loading JSON data: {e}")
         st.stop()
 
     if not text.strip():
-        st.error("No usable SQL content found.")
+        st.error("No usable content found in the JSON file.")
         st.stop()
 
     st.info("Creating FAISS vector store...")
@@ -75,7 +67,7 @@ if uploaded_file is not None:
     st.success("Chatbot is ready!")
     vector_store = load_faiss_vector_store()
 
-    question = st.text_input("Ask a question about the SQL content:")
+    question = st.text_input("Ask a question about the YouTube videos:")
     if question:
         st.info("Retrieving context from the content...")
         retriever = vector_store.as_retriever()
