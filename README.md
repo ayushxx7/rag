@@ -1,43 +1,78 @@
-# rag
-retrieval augment generation (rag) streamlit (st) based web app with chatbot support from Gemini
+# Bollywood Hungama Chatbot 🎬✨
 
-# setup and run
-## install requirements
+A Retrieval Augmented Generation (RAG) Streamlit web app that lets you chat with a fun Bollywood-themed bot about YouTube videos! Uses Gemini (Google Generative AI), HuggingFace embeddings, FAISS vector store, and a stylish Bollywood UI.
+
+---
+
+## Features
+
+- **Bollywood-themed chatbot UI** with random quotes and fun loading messages.
+- **Gemini (Google Generative AI)** for high-quality, context-aware answers.
+- **HuggingFace sentence-transformers** for embedding video data and queries.
+- **FAISS** for fast vector search and retrieval.
+- **Streamlit** for a modern, interactive web interface.
+- **Chat history** with Bollywood flair.
+- **Automatic FAISS index creation** from your YouTube video JSON data.
+
+---
+
+## Setup & Run
+
+### 1. Install requirements
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## run via streamlit
+### 2. Prepare your data
+
+- Place your YouTube video data in a file named `youtube_videos.json` in the project root.
+- See [Data Format](#data-format) below for the required structure.
+
+### 3. Run the app
+
 ```bash
 streamlit run rag.py
 ```
 
-# about
-- upload youtube_videos data of format (mentioned at the end).
-- ask queries after local faiss index store is created.
+---
 
-# under the hood
-- uses `sentence-transformers` from HuggingFace to embed queries and data
-- uses `faiss` for creating vector store for querying
-- uses `gemini` for good quality and scoped Q&A
-- uses `streamlit` for the web interface
+## Usage
 
-## codespace
-https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882db15-890d-4101-b37d-3f4de152a243&continueOn=1
+- The app will load your `youtube_videos.json`, create a FAISS vector store, and launch the chatbot.
+- Ask any question about the videos (e.g., "Which video has the most views?", "Tell me about the song Uyi Amma").
+- Enjoy Bollywood quotes and themed responses!
 
-# sample queries
-![IMG-20250511-WA0063](https://github.com/user-attachments/assets/179f43e4-ae3e-4ad1-ba7a-d5a724f2cf65)
+---
 
-![IMG-20250511-WA0062](https://github.com/user-attachments/assets/d682e79b-e61a-44e5-bb9f-2d30ff674769)
+## Under the Hood
 
-# data format
+- **Embeddings:** Uses `sentence-transformers/all-MiniLM-L6-v2` from HuggingFace for text embeddings.
+- **Vector Store:** Uses `faiss` for fast similarity search.
+- **LLM:** Uses Gemini (`gemini-1.5-pro`) via Google Generative AI for generating answers.
+- **UI:** Built with Streamlit, styled with Bollywood colors, emojis, and quotes.
+
+---
+
+## Sample Queries
+
+- "Which video is the most popular?"
+- "Tell me about the song Uyi Amma."
+- "Who are the singers in Mere Mehboob?"
+
+---
+
+## Data Format
+
+Your `youtube_videos.json` should look like this:
+
 ```json
 {
     "videos": [
         {
             "video_id": "FZLadzn5i6Q",
             "title": "Uyi Amma - Azaad | Aaman D, Rasha Thadani| Madhubanti Bagchi,Amit Trivedi,Amitabh| Bosco| Abhishek K",
-            "description": "👉🏻 SUBSCRIBE to Zee Music Company - https://bit.ly/2yPcBkS \n\nTo Stream & Download Full Song: \nSpotify - https://spoti.fi/3Po1CCU\nJioSaavn - https://bit.ly/40mPTLh\nGaana - https://bit.ly/4gFoWbi\niTunes - https://apple.co/3DHxyzy\nApple Music - https://apple.co/3DHxyzy\nAmazon Prime Music - https://amzn.to/40092RH\nHungama - https://bit.ly/3W1Lo6b\nYouTube Music - https://bit.ly/4a6CBp6\n\nSong: Uyi Amma\nSinger: Madhubanti Bagchi\nComposed by: Amit Trivedi\nLyrics by: Amitabh Bhattacharya\nChoreographer: Bosco Leslie Martis\nBacking Vocals: Rajiv Sundaresan, Rishikesh Kamerkar, Arun Kamath & Suhas Sawant\nCrew:-\nMusic Arranged and Produced by: Amit Trivedi & Rahul Tiwari\nElectric Guitar: Aryan Tiwari\nTrumpet: Robin Fargose\nShennai: Omkar Dhumal\nDholak & Dhol: Jayesh Kathak & Lalit Shankar\nAdditional Indian Percussion: Jayesh Kathak\nAssistant to Rahul Tiwari: Vipul Pednekar\nSound Engineer, AT Studios: Urmila Sutar & Chinmay Mestry\nAssistant Sound Engineer, AT Studios: Abhishek Vishnu Dandekar\nMixed & Mastered by: Shadab Rayeen at New Edge\nAssisted by: Anup, Prasad, Sohamm, Rupam & Kundan\nManager, AT Studios: Naveen\n\nRSVP & Guy In The Sky Pictures present \n#Azaad\n\nStarring: Ajay Devgn, Aaman Devgan, Rasha Thadani, Diana Penty, Mohit Malik & Piyush Mishra\nDirected by: Abhishek Kapoor\nProduced by: Ronnie Screwvala & Pragya Kapoor\nCo-produced by: Abhishek Nayyar & Abhishek Kapoor\nAssociate Producer: Pashan Jal\nWritten By: Ritesh Shah, Suresh Nair & Abhishek Kapoor\nCreative Producer: Nishant Kantharia, Maharsh Shah, Sanaya Irani\n\n\nMusic on Zee Music Company\n\nConnect with us on :\nSnapchat - https://bit.ly/3UIfICJ\nTwitter - https://www.twitter.com/ZeeMusicCompany\nFacebook - https://www.facebook.com/zeemusiccompany\nInstagram - https://www.instagram.com/zeemusiccompany\nYouTube - http://bit.ly/TYZMC",
+            "description": "👉🏻 SUBSCRIBE to Zee Music Company ...",
             "published_at": "2025-01-04T14:54:39Z",
             "search_keyword": "hindi songs",
             "view_count": 260359258,
@@ -53,5 +88,20 @@ https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882d
             "view_count": 235859450,
             "like_count": 1436965,
             "comment_count": 58099
-        },
+        }
+    ]
+}
 ```
+
+---
+
+## Credits
+
+- Made with ❤️ for Bollywood fans.
+- Follow [Zee Music on Instagram](https://www.instagram.com/zeemusiccompany/).
+
+---
+
+## Codespace
+
+[Open in Codespace](https://animated-space-telegram-5g99vgrv9p624xjg.github.dev/?editSessionId=c882db15-890d-4101-b37d-3f4de152a243&continueOn=1)
