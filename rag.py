@@ -21,7 +21,12 @@ def extract_text_from_json(json_data):
     for video in json_data.get("videos", []):
         title = video.get("title", "")
         description = video.get("description", "")
-        text += f"Title: {title}\nDescription: {description}\n\n"
+        view_count = video.get("view_count", 0)
+        like_count = video.get("like_count", 0)
+        comment_count = video.get("comment_count", 0)
+        published_at = video.get("published_at", "")
+
+        text += f"Title: {title}\nDescription: {description}\nViews: {view_count}\nLikes: {like_count}\n Comments: {comment_count}\n Date: {published_at}\n\n"
     return text
 
 # Create FAISS vector store
