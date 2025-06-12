@@ -1124,3 +1124,6 @@ def fetch_all_videos_from_playlist(
     except Exception as e:
         status_placeholder.error(f"❌ Error during playlist pagination: {str(e)}")
         return all_videos
+
+if __name__ == "__main__":
+    main()
