@@ -1,6 +1,6 @@
 # ✨ Bollywood Analytics Engine ✨ 🎬🤖
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_svg.svg)](https://thevibecoder.streamlit.app)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://thevibecoder.streamlit.app)
 
 A personal pet project by **Ayush Mandowara & The Vibe Coder company**. This project combines a **Personal AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
 
