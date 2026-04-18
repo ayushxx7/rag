@@ -12,7 +12,11 @@ from yt_scrape.utils import clean_title, deduplicate_videos
 
 # Load environment variables
 load_dotenv()
-# ... (rest of imports)
+
+# Configure Groq
+API_KEY = os.getenv('GROQ_API_KEY', 'SET YOUR OWN API KEY')
+client = Groq(api_key=API_KEY)
+MODEL_NAME = "llama-3.3-70b-versatile"
 
 # Load all JSON data from the scraped_data directory
 @st.cache_data
