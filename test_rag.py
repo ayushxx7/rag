@@ -7,7 +7,7 @@ os.environ["GROQ_API_KEY"] = "mock_key"
 
 import rag
 from rag import extract_text_from_json, get_embeddings, create_faiss_vector_store, load_faiss_vector_store
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 def test_extract_text_from_json():
     mock_json = {

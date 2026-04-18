@@ -2,7 +2,46 @@ from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import pandas as pd
 import time
-import streamlit as st
+try:
+    import streamlit as st
+except ImportError:
+    st = None
+
+def _st_info(msg):
+    if st:
+        try:
+            st.info(msg)
+            return
+        except:
+            pass
+    print(f"INFO: {msg}")
+
+def _st_success(msg):
+    if st:
+        try:
+            st.success(msg)
+            return
+        except:
+            pass
+    print(f"SUCCESS: {msg}")
+
+def _st_warning(msg):
+    if st:
+        try:
+            st.warning(msg)
+            return
+        except:
+            pass
+    print(f"WARNING: {msg}")
+
+def _st_error(msg):
+    if st:
+        try:
+            st.error(msg)
+            return
+        except:
+            pass
+    print(f"ERROR: {msg}")
 
 class YouTubeScraper:
     def __init__(self, api_key):
@@ -35,7 +74,7 @@ class YouTubeScraper:
             return None
             
         except Exception as e:
-            st.error(f"Error searching for channel '{channel_name}': {str(e)}")
+            _st_error(f"Error searching for channel '{channel_name}': {str(e)}")
             return None
     
     def get_channel_info(self, channel_id):
@@ -62,14 +101,13 @@ class YouTubeScraper:
             return None
             
         except Exception as e:
-            st.error(f"Error getting channel info: {str(e)}")
+            _st_error(f"Error getting channel info: {str(e)}")
             return None
     
-    def get_channel_videos(self, channel_id, batch_size=50, days_back=365, max_videos=None):
+    def get_channel_videos(self, channel_id, batch_size=50, days_back=None, published_after=None, published_before=None, max_videos=None):
         """Get videos from a channel with pagination - supports unlimited videos"""
         try:
-            # Calculate date threshold if specified
-            published_after = None
+            # Calculate date threshold if days_back is specified
             if days_back and days_back > 0:
                 published_after = (datetime.utcnow() - timedelta(days=days_back)).isoformat("T") + "Z"
             
@@ -82,7 +120,7 @@ class YouTubeScraper:
             
             if uploads_playlist_id:
                 # Use playlist method for better coverage
-                videos = self.get_videos_from_playlist(uploads_playlist_id, batch_size, published_after, max_videos)
+                videos = self.get_videos_from_playlist(uploads_playlist_id, batch_size, published_after, published_before, max_videos)
             else:
                 # Fallback to search method
                 while True:
@@ -106,13 +144,15 @@ class YouTubeScraper:
                     
                     if published_after:
                         search_params['publishedAfter'] = published_after
+                    if published_before:
+                        search_params['publishedBefore'] = published_before
                     
                     search_response = self.youtube.search().list(**search_params).execute()
                     self.quota_used += 100  # Search costs 100 units
                     
                     video_items = search_response.get('items', [])
                     if not video_items:
-                        st.info(f"No more videos found after {len(videos)} videos")
+                        _st_info(f"No more videos found after {len(videos)} videos")
                         break
                     
                     # Get video IDs
@@ -153,17 +193,17 @@ class YouTubeScraper:
                     
                     # Progress update
                     if page_count % 10 == 0:
-                        st.info(f"📊 Scraped {len(videos)} videos so far... (Page {page_count})")
+                        _st_info(f"📊 Scraped {len(videos)} videos so far... (Page {page_count})")
                     
                     # Check for next page
                     next_page_token = search_response.get('nextPageToken')
                     if not next_page_token:
-                        st.success(f"✅ Reached end of channel videos. Total: {len(videos)} videos")
+                        _st_success(f"✅ Reached end of channel videos. Total: {len(videos)} videos")
                         break
                     
                     # Check quota usage
                     if self.quota_used > self.max_quota * 0.8:  # Stop at 80% quota usage
-                        st.warning(f"⚠️ Approaching quota limit. Used {self.quota_used} units. Scraped {len(videos)} videos so far.")
+                        _st_warning(f"⚠️ Approaching quota limit. Used {self.quota_used} units. Scraped {len(videos)} videos so far.")
                         break
                     
                     # Small delay to avoid rate limiting
@@ -172,7 +212,7 @@ class YouTubeScraper:
             return videos
             
         except Exception as e:
-            st.error(f"Error getting channel videos: {str(e)}")
+            _st_error(f"Error getting channel videos: {str(e)}")
             return []
     
     def get_uploads_playlist_id(self, channel_id):
@@ -191,10 +231,10 @@ class YouTubeScraper:
             return None
             
         except Exception as e:
-            st.warning(f"Could not get uploads playlist: {str(e)}")
+            _st_warning(f"Could not get uploads playlist: {str(e)}")
             return None
     
-    def get_videos_from_playlist(self, playlist_id, batch_size=50, published_after=None, max_videos=None):
+    def get_videos_from_playlist(self, playlist_id, batch_size=50, published_after=None, published_before=None, max_videos=None):
         """Get all videos from a playlist (more comprehensive than search)"""
         try:
             videos = []
@@ -226,16 +266,18 @@ class YouTubeScraper:
                 # Filter by date if specified
                 filtered_items = []
                 for item in playlist_items:
-                    if published_after:
-                        video_date = item['snippet']['publishedAt']
-                        if video_date >= published_after:
-                            filtered_items.append(item)
-                    else:
-                        filtered_items.append(item)
+                    video_date = item['snippet']['publishedAt']
+                    if published_after and video_date < published_after:
+                        continue
+                    if published_before and video_date > published_before:
+                        continue
+                    filtered_items.append(item)
                 
                 if not filtered_items:
-                    if published_after:
-                        # If we're filtering by date and no items match, we might have gone too far back
+                    if published_after and playlist_items[-1]['snippet']['publishedAt'] < published_after:
+                        break
+                    next_page_token = playlist_response.get('nextPageToken')
+                    if not next_page_token:
                         break
                     continue
                 
@@ -276,17 +318,17 @@ class YouTubeScraper:
                 
                 # Progress update
                 if page_count % 20 == 0:
-                    st.info(f"📊 Scraped {len(videos)} videos from playlist... (Page {page_count})")
+                    _st_info(f"📊 Scraped {len(videos)} videos from playlist... (Page {page_count})")
                 
                 # Check for next page
                 next_page_token = playlist_response.get('nextPageToken')
                 if not next_page_token:
-                    st.success(f"✅ Completed playlist scraping. Total: {len(videos)} videos")
+                    _st_success(f"✅ Completed playlist scraping. Total: {len(videos)} videos")
                     break
                 
                 # Check quota usage
                 if self.quota_used > self.max_quota * 0.8:
-                    st.warning(f"⚠️ Approaching quota limit. Used {self.quota_used} units. Scraped {len(videos)} videos so far.")
+                    _st_warning(f"⚠️ Approaching quota limit. Used {self.quota_used} units. Scraped {len(videos)} videos so far.")
                     break
                 
                 # Small delay
@@ -295,7 +337,7 @@ class YouTubeScraper:
             return videos
             
         except Exception as e:
-            st.error(f"Error getting videos from playlist: {str(e)}")
+            _st_error(f"Error getting videos from playlist: {str(e)}")
             return []
     
     def get_video_statistics(self, video_ids):
@@ -329,10 +371,10 @@ class YouTubeScraper:
             return video_stats
             
         except Exception as e:
-            st.error(f"Error getting video statistics: {str(e)}")
+            _st_error(f"Error getting video statistics: {str(e)}")
             return {}
     
-    def scrape_channel(self, channel_id, batch_size=50, days_back=365, max_videos=200):
+    def scrape_channel(self, channel_id, batch_size=50, days_back=None, published_after=None, published_before=None, max_videos=200):
         """Main method to scrape a complete channel"""
         try:
             # Get channel info
@@ -345,6 +387,8 @@ class YouTubeScraper:
                 channel_id, 
                 batch_size=batch_size, 
                 days_back=days_back, 
+                published_after=published_after,
+                published_before=published_before,
                 max_videos=max_videos
             )
             
@@ -356,7 +400,7 @@ class YouTubeScraper:
             return videos
             
         except Exception as e:
-            st.error(f"Error scraping channel: {str(e)}")
+            _st_error(f"Error scraping channel: {str(e)}")
             return []
     
     def get_quota_usage(self):

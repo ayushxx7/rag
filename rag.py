@@ -1,30 +1,56 @@
 import streamlit as st
 import json
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from groq import Groq
 import random
 import os
+import glob
 from dotenv import load_dotenv
+
+from yt_scrape.utils import clean_title, deduplicate_videos
 
 # Load environment variables
 load_dotenv()
+# ... (rest of imports)
 
-# Configure Groq
-API_KEY = os.getenv('GROQ_API_KEY', 'SET YOUR OWN API KEY')
-client = Groq(api_key=API_KEY)
-MODEL_NAME = "llama-3.3-70b-versatile"
+# Load all JSON data from the scraped_data directory
+@st.cache_data
+def load_all_scraped_data(directory="scraped_data"):
+    import glob
+    all_videos = []
+    json_files = glob.glob(os.path.join(directory, "*.json"))
+    
+    if not json_files:
+        return []
+        
+    for json_path in json_files:
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    # Check for both "videos" key or top-level list
+                    all_videos.extend(data.get("videos", []))
+                elif isinstance(data, list):
+                    all_videos.extend(data)
+        except Exception as e:
+            st.warning(f"⚠️ Could not load {json_path}: {e}")
+            
+    # Deduplicate videos by ID
+    unique_videos = deduplicate_videos(all_videos)
+    return unique_videos
 
-# Load JSON data from a file
-def load_json_data(json_path):
-    with open(json_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-# Extract text from JSON data
+# Extract text from JSON data (legacy function for testing/internal use)
 def extract_text_from_json(json_data):
+    if isinstance(json_data, dict):
+        videos = json_data.get("videos", [])
+    else:
+        videos = json_data
+        
     texts = []
-    for video in json_data.get("videos", []):
-        title = video.get("title", "")
+    for video in videos:
+        raw_title = video.get("title", "")
+        title = clean_title(raw_title)
         description = video.get("description", "")
         view_count = video.get("view_count", 0)
         like_count = video.get("like_count", 0)
@@ -38,7 +64,16 @@ def extract_text_from_json(json_data):
 # Cache the embeddings model
 @st.cache_resource
 def get_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # Detect if we have a GPU
+    import torch
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cpu" and torch.backends.mps.is_available():
+        device = "mps"
+    
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={'device': device}
+    )
 
 # Create FAISS vector store
 def create_faiss_vector_store(texts, path="faiss_index"):
@@ -50,6 +85,7 @@ def create_faiss_vector_store(texts, path="faiss_index"):
 @st.cache_resource
 def load_faiss_vector_store(path="faiss_index"):
     embeddings = get_embeddings()
+    # allow_dangerous_deserialization is required for loading local FAISS indices in newer versions
     return FAISS.load_local(path, embeddings, allow_dangerous_deserialization=True)
 
 # Bollywood quotes/facts
@@ -83,7 +119,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Show a random Bollywood quote/fact (not loading quote)
+# Show a random Bollywood quote/fact
 st.markdown(
     f"<div style='text-align:center; color:#e91e63; font-size:22px; margin-bottom:10px;'>"
     f"💬 <i>{random.choice(BOLLYWOOD_QUOTES)}</i></div>",
@@ -94,20 +130,111 @@ st.markdown(
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-JSON_PATH = "youtube_videos.json"
+# Reusable function to rebuild the index
+def perform_rebuild(videos):
+    if not videos:
+        st.error("😅 Kya karen, no video data to index!")
+        return False
+        
+    texts = []
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    for i, video in enumerate(videos):
+        if i % 500 == 0:
+            progress = (i / len(videos))
+            progress_bar.progress(progress)
+            status_text.text(f"📝 Processing video {i}/{len(videos)}...")
+            
+        raw_title = video.get("title", "")
+        title = clean_title(raw_title)
+        description = str(video.get("description", ""))[:500]
+        view_count = video.get("view_count", 0)
+        like_count = video.get("like_count", 0)
+        comment_count = video.get("comment_count", 0)
+        published_at = video.get("published_at", "")
+        channel = video.get("channel_name", "Unknown Channel")
+        duration = video.get("duration", "N/A")
 
-# Load and process JSON data
+        text = (
+            f"Title: {title}\n"
+            f"Channel: {channel}\n"
+            f"Duration: {duration}\n"
+            f"Views: {view_count}\n"
+            f"Likes: {like_count}\n"
+            f"Comments: {comment_count}\n"
+            f"Date: {published_at}\n"
+            f"Description: {description}\n\n"
+        )
+        texts.append(text)
+
+    status_text.text(f"✨ Indexing {len(texts)} videos... Don ko pakadna mushkil hi nahi, namumkin hai!")
+    create_faiss_vector_store(texts)
+    progress_bar.progress(1.0)
+    status_text.text("✅ Knowledge base successfully rebuilt!")
+    return True
+
+# Check if rebuild is needed based on file timestamps
+def check_rebuild_needed(directory="scraped_data", index_path="faiss_index"):
+    if not os.path.exists(index_path):
+        return True, "Index missing"
+        
+    import glob
+    json_files = glob.glob(os.path.join(directory, "*.json"))
+    if not json_files:
+        return False, "No data files"
+        
+    # Get latest modification time of any JSON file
+    latest_data_time = max(os.path.getmtime(f) for f in json_files)
+    
+    # Get modification time of the index
+    index_file = os.path.join(index_path, "index.faiss")
+    if not os.path.exists(index_file):
+        return True, "Index file missing"
+        
+    index_time = os.path.getmtime(index_file)
+    
+    if latest_data_time > index_time:
+        return True, "New data detected"
+        
+    return False, "Up to date"
+
+# Load and process data from folder
 try:
+    rebuild_required, reason = check_rebuild_needed()
+    
+    # Sidebar for management
+    with st.sidebar:
+        st.header("⚙️ Data Management")
+        st.write(f"Status: **{reason}**")
+        
+        if rebuild_required:
+            st.warning("⚠️ Your knowledge base is out of date!")
+            if st.button("🚀 Update Knowledge Base Now", type="primary"):
+                import shutil
+                if os.path.exists("faiss_index"):
+                    shutil.rmtree("faiss_index")
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                st.rerun()
+        else:
+            if st.button("🔄 Force Rebuild Index"):
+                import shutil
+                if os.path.exists("faiss_index"):
+                    shutil.rmtree("faiss_index")
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                st.rerun()
+
+    # Rebuild if index missing or explicitly requested
     if not os.path.exists("faiss_index"):
-        st.info(random.choice(BOLLYWOOD_LOADING_QUOTES))
-        json_data = load_json_data(JSON_PATH)
-        texts = extract_text_from_json(json_data)
-        if not texts:
-            st.error("😅 Kya karen, no usable content found in the JSON file!")
-            st.stop()
-        create_faiss_vector_store(texts)
+        st.info(f"🎭 {reason}... Rebuilding the Bollywood Hungama knowledge base!")
+        videos = load_all_scraped_data()
+        if perform_rebuild(videos):
+            st.rerun()
+            
 except Exception as e:
-    st.error(f"😱 Arre baba! Error loading/processing data: {e}")
+    st.error(f"😱 Arre baba! Error in data management: {e}")
     st.stop()
 
 st.info("🎬 Lights, Camera, Action! The chatbot is ready for your Bollywood questions!")
@@ -127,7 +254,7 @@ if question:
 
     st.info("🔎 Searching for your answer... Don ko pakadna mushkil hi nahi, namumkin hai!")
     retriever = vector_store.as_retriever()
-    docs = retriever.get_relevant_documents(retrieval_query)
+    docs = retriever.invoke(retrieval_query)
     context = "\n\n".join([doc.page_content for doc in docs])
 
     # Build chat history string for bot prompt (limit to last 5 for bot)

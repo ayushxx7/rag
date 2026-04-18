@@ -3,6 +3,49 @@ import os
 from typing import Optional
 import streamlit as st
 
+def clean_title(title: str) -> str:
+    """Clean video title by removing channel suffixes and extra whitespace"""
+    if not title:
+        return ""
+    
+    # Remove common channel suffixes
+    suffixes = [
+        "| Zee Music Company",
+        "| T-Series",
+        "| Sony Music India",
+        "| Tips Music",
+        "| Saregama Music",
+        "| Sony Music South"
+    ]
+    
+    cleaned = title
+    for suffix in suffixes:
+        cleaned = cleaned.replace(suffix, "")
+    
+    # Remove any other trailing pipe with space
+    cleaned = re.sub(r'\s*\|.*$', '', cleaned)
+    
+    return cleaned.strip()
+
+def deduplicate_videos(videos: list) -> list:
+    """Remove duplicate videos from a list based on video_id, preserving order."""
+    if not videos:
+        return []
+    
+    seen_ids = set()
+    unique_videos = []
+    
+    for video in videos:
+        video_id = video.get('video_id')
+        if video_id and video_id not in seen_ids:
+            unique_videos.append(video)
+            seen_ids.add(video_id)
+        elif not video_id:
+            # If no ID, keep it just in case, or we could skip it
+            unique_videos.append(video)
+            
+    return unique_videos
+
 def extract_channel_id(channel_input: str) -> Optional[str]:
     """Extract channel ID from various YouTube channel formats"""
     if not channel_input:

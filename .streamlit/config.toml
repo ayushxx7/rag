@@ -1,0 +1,7 @@
+[server]
+# This helps with the 'torch.classes' error and 'no running event loop' issues on some systems
+# by changing how streamlit watches for file changes.
+fileWatcherType = "poll"
+
+[logger]
+level = "error"
