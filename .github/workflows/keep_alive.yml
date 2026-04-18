@@ -29,7 +29,7 @@ jobs:
         env:
           # Replace with your actual Streamlit URL if it's different
           # You can also set this as a GitHub Secret named STREAMLIT_APP_URL
-          STREAMLIT_APP_URL: ${{ secrets.STREAMLIT_APP_URL || 'https://rag.streamlit.app' }}
+          STREAMLIT_APP_URL: ${{ secrets.STREAMLIT_APP_URL || 'https://thevibecoder.streamlit.app' }}
         run: python scripts/keep_alive.py
 
       - name: Upload screenshot on failure
