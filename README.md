@@ -40,9 +40,13 @@ Developed and architected with the power of **Gemini CLI** 🚀
 ## 📸 UI Gallery
 *(Run the `capture_ui.py` script to generate these high-res visuals)*
 
-| 🎬 AI Assistant | 📊 Analytics Dashboard | 🎲 Jukebox |
-| :---: | :---: | :---: |
-| ![Chatbot](showcase/01_chatbot_main.png) | ![Analytics](showcase/03_analytics_view.png) | ![Jukebox](showcase/04_jukebox.png) |
+| 🎬 AI Assistant | 📊 Analytics Dashboard |
+| :---: | :---: |
+| ![Chatbot](showcase/02_chatbot_answer.png) | ![Analytics](showcase/03_analytics_view.png) |
+
+| 🎲 Jukebox | 🔍 Infinite Scraper |
+| :---: | :---: |
+| ![Jukebox](showcase/04_jukebox.png) | ![Scraper](showcase/05_scraper_ui.png) |
 
 ---
 
