@@ -20,8 +20,8 @@ if 'storage' not in st.session_state:
     st.session_state.storage = DataStorage(mongodb_uri=mongodb_uri)
 
 def main():
-    st.title("🎥 YouTube Channel Data Scraper")
-    st.markdown("Scrape unlimited YouTube channel data with simultaneous JSON and MongoDB storage")
+    st.title("🎥 YouTube Data Scraper | Ayush & The Vibe Coder")
+    st.markdown("A personal pet project for unlimited YouTube data scraping 🚀")
     
     # Add info about unlimited scraping
     with st.expander("ℹ️ About Unlimited Scraping"):

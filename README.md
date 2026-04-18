@@ -1,6 +1,6 @@
-# ✨ Bollywood Magic: Full-Stack RAG & Data Engine ✨ 🎬🤖
+# ✨ Bollywood Analytics Engine ✨ 🎬🤖
 
-A high-performance, production-ready ecosystem for Bollywood fans and data scientists. This project combines a **Genius AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
+A personal pet project by **Ayush Mandowara & The Vibe Coder company**. This project combines a **Genius AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
 
 Developed and architected with the power of **Gemini CLI** 🚀
 
@@ -8,7 +8,7 @@ Developed and architected with the power of **Gemini CLI** 🚀
 
 ## 🌟 Full Feature Set
 
-### 🤖 1. Bollywood Genius Bot (RAG)
+### 🤖 1. Bollywood AI Assistant (RAG)
 - **State-of-the-Art LLM**: Powered by **Llama 3.3 70B (Groq)** for lightning-fast, spicy, and context-aware responses.
 - **Vibe-o-Meter**: A dynamic mood selector (**Sad, Chill, Romantic, Party, Aggressive**) that automatically refines vector search results.
 - **Deep Context Retrieval**: Uses **FAISS** and **HuggingFace** to search through 14,000+ videos.
@@ -16,7 +16,7 @@ Developed and architected with the power of **Gemini CLI** 🚀
 - **Smart Query Expansion**: Automatically injects genre-specific keywords (e.g., Rap, Hip-Hop) to find the best hits.
 - **Persistent Chat History**: Maintains a sliding-window context for long, engaging conversations.
 
-### 📈 2. Magic Analytics Dashboard
+### 📈 2. Analytics Dashboard
 - **Real-time Metrics**: Instant visibility into total views, video counts, and top labels.
 - **Viral Detection Engine**: A custom **Engagement Score** algorithm (Weighted Likes/Comments vs Views) to find the next big hit.
 - **Interactive Visuals**: High-quality **Plotly** charts for view distribution and publishing velocity.
@@ -40,7 +40,7 @@ Developed and architected with the power of **Gemini CLI** 🚀
 ## 📸 UI Gallery
 *(Run the `capture_ui.py` script to generate these high-res visuals)*
 
-| 🎬 Genius Chatbot | 📊 Analytics Dashboard | 🎲 Magic Jukebox |
+| 🎬 AI Assistant | 📊 Analytics Dashboard | 🎲 Jukebox |
 | :---: | :---: | :---: |
 | ![Chatbot](showcase/01_chatbot_main.png) | ![Analytics](showcase/03_analytics_view.png) | ![Jukebox](showcase/04_jukebox.png) |
 
@@ -98,4 +98,4 @@ PYTHONPATH=. pytest
 
 ---
 
-**Mogambo Khush Hua!** 🎈🍿🎬🚀
+**Mogambo Khush Hua!** 🎈🍿🎬🚀 | © 2026 Ayush Mandowara & The Vibe Coder

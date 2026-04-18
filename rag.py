@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from yt_scrape.utils import clean_title, deduplicate_videos, prepare_leaderboard, calculate_engagement_score
 
 # Set page config for a wider dashboard look
-st.set_page_config(page_title="Bollywood Magic Dashboard", layout="wide", page_icon="🎬")
+st.set_page_config(page_title="Bollywood Analytics | Ayush Mandowara & The Vibe Coder", layout="wide", page_icon="🎬")
 
 # Load environment variables
 load_dotenv()
@@ -138,7 +138,7 @@ def perform_rebuild(videos):
         texts.append(text)
     create_faiss_vector_store(texts)
     progress_bar.progress(1.0)
-    status_text.text("✅ Magic Knowledge Base Rebuilt!")
+    status_text.text("✅ Knowledge Base Rebuilt!")
     return True
 
 def check_rebuild_needed(directory="scraped_data", index_path="faiss_index"):
@@ -152,7 +152,7 @@ def check_rebuild_needed(directory="scraped_data", index_path="faiss_index"):
     return False, "Up to date"
 
 # --- UI LOGIC ---
-st.markdown("<h1 style='text-align: center; color: #E50914;'>✨ Bollywood Magic Dashboard ✨</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #E50914;'>✨ Bollywood Analytics Engine ✨</h1>", unsafe_allow_html=True)
 
 rebuild_required, reason = check_rebuild_needed()
 with st.sidebar:
@@ -190,7 +190,7 @@ if not df.empty:
     df['channel_name'] = df.apply(infer_channel_name, axis=1)
     df['view_count'] = pd.to_numeric(df['view_count'], errors='coerce').fillna(0)
 
-tab1, tab2 = st.tabs(["🤖 Bollywood Genius Bot", "📈 Magic Analytics"])
+tab1, tab2 = st.tabs(["🤖 Bollywood AI Assistant", "📈 Analytics"])
 
 with tab2:
     if not df.empty:
@@ -238,11 +238,11 @@ with tab2:
                 st.dataframe(viral_df[['title', 'Viral Score', 'channel_name']], hide_index=True, use_container_width=True)
 
 with tab1:
-    st.info("I am the Bollywood Genius. Ask me anything!")
+    st.info("I am your personal Bollywood AI Assistant. Ask me anything!")
     mood_vibe = st.selectbox("🎭 Mood Vibe", options=["Sad", "Chill", "Romantic", "Party", "Aggressive"], index=2)
     
     col_j, col_s = st.columns(2)
-    with col_j.expander("🎲 Magic Jukebox"):
+    with col_j.expander("🎲 Jukebox"):
         if st.button("Shuffle & Pick!"):
             rv = df.sample(1).iloc[0]
             st.write(f"🎵 {rv['title']}")
@@ -274,4 +274,4 @@ with tab1:
     for msg in reversed(st.session_state.chat_history):
         st.chat_message(msg["role"], avatar="🎬" if msg["role"]=="assistant" else None).write(msg["content"])
 
-st.markdown("<hr><p style='text-align: center;'>Magic Engine Powered by Groq & Gemini CLI | © 2026 Bollywood Genius</p>", unsafe_allow_html=True)
+st.markdown("<hr><p style='text-align: center;'>Magic Engine Powered by Groq & Gemini CLI | © 2026 Ayush Mandowara & The Vibe Coder</p>", unsafe_allow_html=True)

@@ -6,7 +6,7 @@ import streamlit as st
 from mongodb_storage import MongoDBStorage
 
 class DataStorage:
-    def __init__(self, json_directory="data", mongodb_uri=None):
+    def __init__(self, json_directory="scraped_data", mongodb_uri=None):
         self.json_directory = json_directory
         self.memory_storage = {}  # In-memory storage for session
         

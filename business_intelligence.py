@@ -21,8 +21,8 @@ MONGODB_COLLECTION = os.getenv("MONGODB_COLLECTION", "videos")
 # Load NLP model
 nlp = spacy.load("en_core_web_sm")
 
-st.set_page_config(page_title="Smart Data Analyzer Pro", layout="wide")
-st.title("🧠 Smart Data Analyzer Pro — YouTube Revenue Validation")
+st.set_page_config(page_title="Smart Data Analyzer | Ayush Mandowara & The Vibe Coder", layout="wide")
+st.title("🧠 Smart Data Analyzer — Ayush Mandowara & The Vibe Coder")
 
 # Initialize session state for context memory
 if 'conversation_history' not in st.session_state:

@@ -16,7 +16,7 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="YouTube Data Fetcher with Pagination",
+    page_title="YT Data Engine | Ayush Mandowara & The Vibe Coder",
     page_icon="🎥",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -562,8 +562,8 @@ def show_mongodb_status():
 
 def main():
     # Header
-    st.markdown("<h1 class='main-header'>🎥 YouTube Data Fetcher with Pagination</h1>", unsafe_allow_html=True)
-    st.markdown("Transform your ideas into smart YouTube searches, powered by AI with full channel pagination! 🚀")
+    st.markdown("<h1 class='main-header'>🎥 Personal YouTube Data Engine</h1>", unsafe_allow_html=True)
+    st.markdown("A personal pet project by Ayush Mandowara & The Vibe Coder company 🚀")
     
     # Check API configuration first
     if not check_api_configuration():
