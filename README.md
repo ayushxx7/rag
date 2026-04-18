@@ -1,29 +1,48 @@
-# ✨ Bollywood Magic Dashboard ✨ 🎬🤖
+# ✨ Bollywood Magic: Full-Stack RAG & Data Engine ✨ 🎬🤖
 
-A high-performance, full-stack Bollywood command center! This application transforms over **14,000 YouTube videos** into a searchable, interactive, and intelligent knowledge base using **Retrieval Augmented Generation (RAG)** and real-time data analytics.
+A high-performance, production-ready ecosystem for Bollywood fans and data scientists. This project combines a **Genius AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
 
-Developed and rebuilt with the power of **Gemini CLI** 🚀
+Developed and architected with the power of **Gemini CLI** 🚀
 
 ---
 
-## 🌟 Supercharged Features
+## 🌟 Full Feature Set
 
-### 🤖 Bollywood Genius Bot
-- **Llama 3.3 70B (Groq)**: Blazing fast, context-aware answers with a spicy "filmy" personality.
-- **🎭 Vibe-o-Meter**: Select your mood (**Sad, Chill, Romantic, Party, Aggressive**) to dynamically influence search results.
-- **🌟 Artist Spotlight**: Interactive tool that generates AI bios for trending singers (Diljit, Arijit, Karan Aujla) and their 2026 status.
-- **🎲 Magic Jukebox**: A random song picker with thumbnails to discover hidden hits.
+### 🤖 1. Bollywood Genius Bot (RAG)
+- **State-of-the-Art LLM**: Powered by **Llama 3.3 70B (Groq)** for lightning-fast, spicy, and context-aware responses.
+- **Vibe-o-Meter**: A dynamic mood selector (**Sad, Chill, Romantic, Party, Aggressive**) that automatically refines vector search results.
+- **Deep Context Retrieval**: Uses **FAISS** and **HuggingFace** to search through 14,000+ videos.
+- **Artist Spotlight**: Generates instant AI biographies for trending singers including their 2026 status.
+- **Smart Query Expansion**: Automatically injects genre-specific keywords (e.g., Rap, Hip-Hop) to find the best hits.
+- **Persistent Chat History**: Maintains a sliding-window context for long, engaging conversations.
 
-### 📈 Magic Analytics Dashboard
-- **Real-time Insights**: Track total views, video count, and publishing velocity across major labels (T-Series, Zee, Sony, etc.).
-- **🚀 Viral Detection**: Implemented a TDD-verified **Engagement Score** algorithm to identify high-quality trending content.
-- **🏆 Trending Leaderboard**: A ranked view of the top singers by cumulative views.
-- **🎯 Dynamic Filters**: Sliders for view-count ranges and radio buttons for genre/mood filtering.
+### 📈 2. Magic Analytics Dashboard
+- **Real-time Metrics**: Instant visibility into total views, video counts, and top labels.
+- **Viral Detection Engine**: A custom **Engagement Score** algorithm (Weighted Likes/Comments vs Views) to find the next big hit.
+- **Interactive Visuals**: High-quality **Plotly** charts for view distribution and publishing velocity.
+- **Trending Leaderboard**: A ranked, TDD-verified view of the most popular artists in your dataset.
+- **Advanced Filtering**: Use sidebar sliders to filter the entire dashboard by minimum view count or specific artist depth.
 
-### 🔍 Infinite Scraper Engine
-- **Playlist Uploads API**: High-efficiency scraping capable of fetching 10,000+ videos while saving 99% of API quota.
-- **Auto-Sync Knowledge Base**: The system automatically detects new scraped files and prompts for a vector store update.
-- **Smart Data Cleaning**: TDD-verified title cleaning and video deduplication pipeline.
+### 🔍 3. Infinite YouTube Scraper
+- **Uploads Playlist Method**: 100x more quota-efficient than standard search; can fetch 20,000+ videos with minimal API cost.
+- **Multi-Channel Support**: Pre-configured for T-Series, Zee Music, Sony, Tips, and Saregama.
+- **AI-Powered Search**: Uses Groq to transform natural language into optimized YouTube API queries.
+- **Incremental Progress**: Real-time Streamlit progress tracking with batch statistics.
+
+### 🗄️ 4. Robust Data & Storage
+- **Dual-Stream Storage**: Simultaneously saves to local **JSON files** and **MongoDB**.
+- **Auto-Sync Knowledge Base**: Detects new scraped data via timestamp comparison and prompts for an automatic FAISS rebuild.
+- **Smart Metadata Engine**: Automatically extracts **Singers**, **Movies**, and **Tags** from raw video descriptions.
+- **Data Integrity**: Integrated TDD-verified title cleaning and video deduplication pipeline.
+
+---
+
+## 📸 UI Gallery
+*(Run the `capture_ui.py` script to generate these high-res visuals)*
+
+| 🎬 Genius Chatbot | 📊 Analytics Dashboard | 🎲 Magic Jukebox |
+| :---: | :---: | :---: |
+| ![Chatbot](showcase/01_chatbot_main.png) | ![Analytics](showcase/03_analytics_view.png) | ![Jukebox](showcase/04_jukebox.png) |
 
 ---
 
@@ -34,56 +53,49 @@ Developed and rebuilt with the power of **Gemini CLI** 🚀
 git clone https://github.com/ayushxx7/rag.git
 cd rag
 pip install -r requirements.txt
-playwright install  # Optional: For automated screenshots
+playwright install  # Required for automated screenshots
 ```
 
-### 2. Configure `.env`
+### 2. Configure Environment
+Create a `.env` file:
 ```env
 GROQ_API_KEY=your_key
 YOUTUBE_API_KEY=your_key
+MONGODB_URI=mongodb://localhost:27017/  # Optional
 ```
 
-### 3. Launch the Magic
+### 3. Launch the App
 ```bash
 # Start the Dashboard & Bot
 streamlit run rag.py
 
-# Start the Scraper UI (Separate port)
+# Start the Scraper UI
 streamlit run yt_scrape/app.py --server.port 8502
 ```
 
 ---
 
-## 🏗️ Architecture & Tech Stack
-
-- **LLM**: Groq (Llama 3.3 70B Versatile)
-- **Vector DB**: FAISS
-- **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`)
-- **Frontend**: Streamlit (Interactive UI)
-- **Visualization**: Plotly Express
-- **Language**: Python 3.11+
-- **Testing**: Pytest (20+ verified tests)
-
----
-
 ## 🧪 Verified Quality
-We maintain a robust **TDD-verified** codebase:
-- `yt_scrape/test_utils.py`: Tests for cleaning, deduplication, and engagement math.
-- `yt_scrape/test_youtube_scraper.py`: Tests for API interaction and playlist traversal.
-- `test_rag.py`: Tests for retrieval and vector store integrity.
+We maintain a robust **TDD-verified** codebase with 20+ passing tests:
+- `yt_scrape/test_utils.py`: Cleaning, deduplication, and engagement math.
+- `yt_scrape/test_youtube_scraper.py`: API interaction and playlist traversal.
+- `test_rag.py`: Retrieval and vector store integrity.
 
-Run them all with:
+Run the suite:
 ```bash
 PYTHONPATH=. pytest
 ```
 
 ---
 
-## ❤️ Credits
-- Built with ❤️ for Bollywood fans.
-- Powered by **Groq**, **HuggingFace**, and **Gemini CLI**.
-- Data sourced from **YouTube Data API v3**.
+## 🏗️ Tech Stack
+- **AI/LLM**: Groq (Llama 3.3 70B), Gemini CLI
+- **Vector DB**: FAISS
+- **Embeddings**: HuggingFace (`all-MiniLM-L6-v2`)
+- **Backend**: Python 3.11+, MongoDB
+- **UI/Charts**: Streamlit, Plotly Express
+- **Automation**: Playwright
 
 ---
 
-**Mogambo Khush Hua!** 🎈🍿✨
+**Mogambo Khush Hua!** 🎈🍿🎬🚀
