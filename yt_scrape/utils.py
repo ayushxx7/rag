@@ -1,5 +1,6 @@
 import re
 import os
+import pandas as pd
 from typing import Optional
 import streamlit as st
 
@@ -45,6 +46,39 @@ def deduplicate_videos(videos: list) -> list:
             unique_videos.append(video)
             
     return unique_videos
+
+def prepare_leaderboard(data: list) -> pd.DataFrame:
+    """Format artist stats into a ranked DataFrame for clean UI display."""
+    if not data:
+        return pd.DataFrame()
+    
+    df = pd.DataFrame(data)
+    
+    # Sort by views descending
+    df = df.sort_values("Total Views", ascending=False)
+    
+    # Reset index and add Rank
+    df = df.reset_index(drop=True)
+    df.index += 1
+    df.insert(0, 'Rank', df.index)
+    df = df.reset_index(drop=True) # Reset again so pandas index starts from 0 but Rank is visible
+    
+    return df
+
+def calculate_engagement_score(views, likes, comments) -> float:
+    """Calculate a weighted engagement score. (Likes*10 + Comments*50) / (Views/100)."""
+    try:
+        v = float(views) if views else 0
+        l = float(likes) if likes else 0
+        c = float(comments) if comments else 0
+        
+        if v <= 0:
+            return 0.0
+            
+        score = (l * 10 + c * 50) / (v / 100)
+        return round(score, 2)
+    except (ValueError, TypeError):
+        return 0.0
 
 def extract_channel_id(channel_input: str) -> Optional[str]:
     """Extract channel ID from various YouTube channel formats"""
