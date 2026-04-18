@@ -1,6 +1,6 @@
 # ✨ Bollywood Analytics Engine ✨ 🎬🤖
 
-A personal pet project by **Ayush Mandowara & The Vibe Coder company**. This project combines a **Genius AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
+A personal pet project by **Ayush Mandowara & The Vibe Coder company**. This project combines a **Personal AI Chatbot**, a **Real-time Analytics Dashboard**, and an **Infinite YouTube Scraper** into one seamless experience.
 
 Developed and architected with the power of **Gemini CLI** 🚀
 

@@ -257,7 +257,7 @@ with tab1:
 
     if "chat_history" not in st.session_state: st.session_state.chat_history = []
     vector_store = load_faiss_vector_store()
-    question = st.text_input("🎤 Ask your Bollywood Genius:", placeholder=f"Ask about a {mood_vibe} song...")
+    question = st.text_input("🎤 Ask your Bollywood AI:", placeholder=f"Ask about a {mood_vibe} song...")
 
     if question:
         st.session_state.chat_history.append({"role": "user", "content": question})
@@ -265,7 +265,7 @@ with tab1:
         docs = retriever.invoke(f"{question} {mood_vibe} mood")
         context = "\n---\n".join([doc.page_content for doc in docs])
         chat_completion = client.chat.completions.create(
-            messages=[{"role": "system", "content": "You are GeniusBot, a Bollywood Analyst. NEVER say you don't know if context has a mention. Provide details HERE. If date is 2026, celebrate it!"},
+            messages=[{"role": "system", "content": "You are AssistantBot, a Bollywood Analyst. NEVER say you don't know if context has a mention. Provide details HERE. If date is 2026, celebrate it!"},
                       {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}],
             model=MODEL_NAME,
         )
@@ -274,4 +274,4 @@ with tab1:
     for msg in reversed(st.session_state.chat_history):
         st.chat_message(msg["role"], avatar="🎬" if msg["role"]=="assistant" else None).write(msg["content"])
 
-st.markdown("<hr><p style='text-align: center;'>Magic Engine Powered by Groq & Gemini CLI | © 2026 Ayush Mandowara & The Vibe Coder</p>", unsafe_allow_html=True)
+st.markdown("<hr><p style='text-align: center;'>Data Engine Powered by Groq & Gemini CLI | © 2026 Ayush Mandowara & The Vibe Coder</p>", unsafe_allow_html=True)
