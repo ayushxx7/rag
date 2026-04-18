@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from groq import Groq
 import requests
 import json
 import os
@@ -27,7 +27,7 @@ class APIConfig:
     """Backend configuration for API keys - modify these values"""
     
     # Automatically fetch keys from .env file using environment variables
-    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'your_gemini_api_key_here')
+    GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'your_groq_api_key_here')
     YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', 'your_youtube_api_key_here')
     MONGODB_CONNECTION = os.environ.get('MONGODB_CONNECTION', 'mongodb://localhost:27017/local/yt_videodata')
     
@@ -36,8 +36,8 @@ class APIConfig:
         """Validate if API keys are configured"""
         missing_keys = []
         
-        if not cls.GEMINI_API_KEY or cls.GEMINI_API_KEY == 'your_gemini_api_key_here':
-            missing_keys.append('Gemini API Key')
+        if not cls.GROQ_API_KEY or cls.GROQ_API_KEY == 'your_groq_api_key_here':
+            missing_keys.append('Groq API Key')
         
         if not cls.YOUTUBE_API_KEY or cls.YOUTUBE_API_KEY == 'your_youtube_api_key_here':
             missing_keys.append('YouTube API Key')
@@ -116,7 +116,7 @@ def check_api_configuration():
         1. Create a `.env` file in your project directory
         2. Add your API keys:
         ```
-        GEMINI_API_KEY=your_actual_gemini_key
+        GROQ_API_KEY=your_actual_groq_key
         YOUTUBE_API_KEY=your_actual_youtube_key
         MONGODB_CONNECTION=mongodb://localhost:27017/
         ```
@@ -126,19 +126,23 @@ def check_api_configuration():
     
     return True
 
-def configure_gemini():
-    """Configure Gemini AI with API key"""
+def configure_groq():
+    """Configure Groq client"""
     try:
-        genai.configure(api_key=APIConfig.GEMINI_API_KEY)
+        if 'groq_client' not in st.session_state:
+            st.session_state.groq_client = Groq(api_key=APIConfig.GROQ_API_KEY)
         return True
     except Exception as e:
-        st.error(f"❌ Error configuring Gemini: {str(e)}")
+        st.error(f"❌ Error configuring Groq: {str(e)}")
         return False
 
 def generate_smart_query(prompt):
-    """Convert user prompt to optimized YouTube search query using Gemini"""
+    """Convert user prompt to optimized YouTube search query using Groq"""
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        if 'groq_client' not in st.session_state:
+            configure_groq()
+        
+        client = st.session_state.groq_client
         
         system_prompt = """
         You are an expert at creating optimized YouTube search queries. 
@@ -155,10 +159,21 @@ def generate_smart_query(prompt):
         Return ONLY the search query, nothing else.
         """
         
-        full_prompt = f"{system_prompt}\n\nUser message: {prompt}\n\nOptimized YouTube search query:"
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": f"User message: {prompt}\n\nOptimized YouTube search query:",
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+        )
         
-        response = model.generate_content(full_prompt)
-        return response.text.strip().replace('"', '')
+        return chat_completion.choices[0].message.content.strip().replace('"', '')
     
     except Exception as e:
         st.error(f"❌ Error generating smart query: {str(e)}")
@@ -633,7 +648,7 @@ def main():
         
         # Process regular search
         if search_button and user_prompt.strip():
-            if not configure_gemini():
+            if not configure_groq():
                 return
             
             progress_bar = st.progress(0)

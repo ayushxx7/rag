@@ -1,13 +1,13 @@
 # Bollywood Hungama Chatbot 🎬✨
 
-A Retrieval Augmented Generation (RAG) Streamlit web app that lets you chat with a fun Bollywood-themed bot about YouTube videos! Uses Gemini (Google Generative AI), HuggingFace embeddings, FAISS vector store, and a stylish Bollywood UI.
+A Retrieval Augmented Generation (RAG) Streamlit web app that lets you chat with a fun Bollywood-themed bot about YouTube videos! Uses Groq (Llama 3.3 70B), HuggingFace embeddings, FAISS vector store, and a stylish Bollywood UI.
 
 ---
 
 ## Features
 
 - **Bollywood-themed chatbot UI** with random quotes and fun loading messages.
-- **Gemini (Google Generative AI)** for high-quality, context-aware answers.
+- **Groq (Llama 3.3 70B)** for high-quality, context-aware answers.
 - **HuggingFace sentence-transformers** for embedding video data and queries.
 - **FAISS** for fast vector search and retrieval.
 - **Streamlit** for a modern, interactive web interface.
@@ -49,7 +49,7 @@ streamlit run rag.py
 
 - **Embeddings:** Uses `sentence-transformers/all-MiniLM-L6-v2` from HuggingFace for text embeddings.
 - **Vector Store:** Uses `faiss` for fast similarity search.
-- **LLM:** Uses Gemini (`gemini-1.5-pro`) via Google Generative AI for generating answers.
+- **LLM:** Uses Groq (`llama-3.3-70b-versatile`) for generating answers.
 - **UI:** Built with Streamlit, styled with Bollywood colors, emojis, and quotes.
 
 ---

@@ -2,13 +2,18 @@ import streamlit as st
 import json
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-import google.generativeai as genai
+from groq import Groq
 import random
+import os
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
-# Configure Gemini
-genai.configure(api_key="AIzaSyCWWp87jq69qbFdC2hIvd1B7QgZf0QuS5U")
-model = genai.GenerativeModel("gemini-1.5-pro")
+# Configure Groq
+API_KEY = os.getenv('GROQ_API_KEY', 'SET YOUR OWN API KEY')
+client = Groq(api_key=API_KEY)
+MODEL_NAME = "llama-3.3-70b-versatile"
 
 # Load JSON data from a file
 def load_json_data(json_path):
@@ -17,7 +22,7 @@ def load_json_data(json_path):
 
 # Extract text from JSON data
 def extract_text_from_json(json_data):
-    text = ""
+    texts = []
     for video in json_data.get("videos", []):
         title = video.get("title", "")
         description = video.get("description", "")
@@ -26,18 +31,25 @@ def extract_text_from_json(json_data):
         comment_count = video.get("comment_count", 0)
         published_at = video.get("published_at", "")
 
-        text += f"Title: {title}\nDescription: {description}\nViews: {view_count}\nLikes: {like_count}\n Comments: {comment_count}\n Date: {published_at}\n\n"
-    return text
+        text = f"Title: {title}\nDescription: {description}\nViews: {view_count}\nLikes: {like_count}\n Comments: {comment_count}\n Date: {published_at}\n\n"
+        texts.append(text)
+    return texts
+
+# Cache the embeddings model
+@st.cache_resource
+def get_embeddings():
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 # Create FAISS vector store
-def create_faiss_vector_store(text, path="faiss_index"):
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vector_store = FAISS.from_texts([text], embedding=embeddings)
+def create_faiss_vector_store(texts, path="faiss_index"):
+    embeddings = get_embeddings()
+    vector_store = FAISS.from_texts(texts, embedding=embeddings)
     vector_store.save_local(path)
 
 # Load FAISS vector store
+@st.cache_resource
 def load_faiss_vector_store(path="faiss_index"):
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embeddings = get_embeddings()
     return FAISS.load_local(path, embeddings, allow_dangerous_deserialization=True)
 
 # Bollywood quotes/facts
@@ -86,18 +98,18 @@ JSON_PATH = "youtube_videos.json"
 
 # Load and process JSON data
 try:
-    st.info(random.choice(BOLLYWOOD_LOADING_QUOTES))
-    json_data = load_json_data(JSON_PATH)
-    text = extract_text_from_json(json_data)
+    if not os.path.exists("faiss_index"):
+        st.info(random.choice(BOLLYWOOD_LOADING_QUOTES))
+        json_data = load_json_data(JSON_PATH)
+        texts = extract_text_from_json(json_data)
+        if not texts:
+            st.error("😅 Kya karen, no usable content found in the JSON file!")
+            st.stop()
+        create_faiss_vector_store(texts)
 except Exception as e:
-    st.error(f"😱 Arre baba! Error loading JSON data: {e}")
+    st.error(f"😱 Arre baba! Error loading/processing data: {e}")
     st.stop()
 
-if not text.strip():
-    st.error("😅 Kya karen, no usable content found in the JSON file!")
-    st.stop()
-
-create_faiss_vector_store(text)
 st.info("🎬 Lights, Camera, Action! The chatbot is ready for your Bollywood questions!")
 vector_store = load_faiss_vector_store()
 
@@ -107,9 +119,9 @@ question = st.text_input("🎤 Ask a question about YouTube videos:")
 BOT_NAME = "HungamaBot"
 
 if question:
-    # Build chat history string for retrieval
+    # Build chat history string for retrieval (limit to last 3 for context)
     retrieval_query = ""
-    for entry in st.session_state.chat_history:
+    for entry in st.session_state.chat_history[-3:]:
         retrieval_query += f"User: {entry['question']}\n{BOT_NAME}: {entry['answer']}\n"
     retrieval_query += f"User: {question}"
 
@@ -118,9 +130,9 @@ if question:
     docs = retriever.get_relevant_documents(retrieval_query)
     context = "\n\n".join([doc.page_content for doc in docs])
 
-    # Build chat history string for bot prompt
+    # Build chat history string for bot prompt (limit to last 5 for bot)
     history_str = ""
-    for entry in st.session_state.chat_history:
+    for entry in st.session_state.chat_history[-5:]:
         history_str += f"User: {entry['question']}\n{BOT_NAME}: {entry['answer']}\n"
 
     # Compose prompt with history
@@ -131,8 +143,20 @@ if question:
     )
 
     st.info(f"🤖 {BOT_NAME} is thinking... Picture abhi baaki hai mere dost!")
-    response = model.generate_content(prompt)
-    answer = response.text if response else "No response from HungamaBot."
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": f"You are {BOT_NAME}, a fun Bollywood-themed bot. Answer questions using the provided context."
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model=MODEL_NAME,
+    )
+    answer = chat_completion.choices[0].message.content if chat_completion.choices else "No response from HungamaBot."
     st.session_state.chat_history.append({"question": question, "answer": answer})
     st.success("🎉 Mogambo khush hua! Here's your Bollywood answer!")
 
