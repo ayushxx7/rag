@@ -1,0 +1,42 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    # Run every 3 days at 00:00 UTC
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
+
+      - name: Run wake-up script
+        env:
+          # Replace with your actual Streamlit URL if it's different
+          # You can also set this as a GitHub Secret named STREAMLIT_APP_URL
+          STREAMLIT_APP_URL: ${{ secrets.STREAMLIT_APP_URL || 'https://rag.streamlit.app' }}
+        run: python scripts/keep_alive.py
+
+      - name: Upload screenshot on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-status-screenshots
+          path: |
+            app_status.png
+            error_screenshot.png
